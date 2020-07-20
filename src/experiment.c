@@ -42,32 +42,32 @@ int main(int argc, char const *argv[]){
                 start = clock();
                 int *assigns1 = clust_opt1(xs,n,k,0,&ndists);
                 time = (double)(clock() - start) / (double)CLOCKS_PER_SEC;
-                printf("op1\t%d\t%d\t%d\t%ld\t%lf\n",d,n,k,ndists,time);
+                printf("op1\t%d\t%d\t%d\t%lld\t%lf\n",d,n,k,ndists,time);
 
                 start = clock();
                 int *assigns2 = clust_opt2(xs,n,k,0,&ndists);
                 time = (double)(clock() - start) / (double)CLOCKS_PER_SEC;
-                printf("op2\t%d\t%d\t%d\t%ld\t%lf\n",d,n,k,ndists,time);
+                printf("op2\t%d\t%d\t%d\t%lld\t%lf\n",d,n,k,ndists,time);
 
                 start = clock();
                 int *assigns3 = clust_opt3(xs,n,k,0,&ndists);
                 time = (double)(clock() - start) / (double)CLOCKS_PER_SEC;
-                printf("op3\t%d\t%d\t%d\t%ld\t%lf\n",d,n,k,ndists,time);
+                printf("op3\t%d\t%d\t%d\t%lld\t%lf\n",d,n,k,ndists,time);
 
                 start = clock();
                 int *assigns4a = clust_opt4a(xs,n,k,0,&ndists);
                 time = (double)(clock() - start) / (double)CLOCKS_PER_SEC;
-                printf("op4a\t%d\t%d\t%d\t%ld\t%lf\n",d,n,k,ndists,time);
+                printf("op4a\t%d\t%d\t%d\t%lld\t%lf\n",d,n,k,ndists,time);
 
                 start = clock();
                 int *assigns4b = clust_opt4b(xs,n,k,0,&ndists);
                 time = (double)(clock() - start) / (double)CLOCKS_PER_SEC;
-                printf("op4b\t%d\t%d\t%d\t%ld\t%lf\n",d,n,k,ndists,time);
+                printf("op4b\t%d\t%d\t%d\t%lld\t%lf\n",d,n,k,ndists,time);
 
                 start = clock();
                 int *assigns4ab = clust_opt4ab(xs,n,k,0,&ndists);
                 time = (double)(clock() - start) / (double)CLOCKS_PER_SEC;
-                printf("op4ab\t%d\t%d\t%d\t%ld\t%lf\n",d,n,k,ndists,time);
+                printf("op4ab\t%d\t%d\t%d\t%lld\t%lf\n",d,n,k,ndists,time);
 
                 for(int i=0;i<n;i++){
                     assert(assigns1[i]==assigns2[i]);
