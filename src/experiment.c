@@ -17,6 +17,7 @@ int main(int argc, char const *argv[]){
     const float KNUM[] = {2,1,1};
     const float KDEN[] = {3,8,32};
     const lint MEMDISTLIMIT = 100000000; // less than 3GB
+    const int KLIMIT = 316227;
 
     for(int i1=0;i1<ARRSIZE(D);i1++){
         int d = D[i1];
@@ -26,6 +27,7 @@ int main(int argc, char const *argv[]){
                 int knum = KNUM[i3];
                 int kden = KDEN[i3];
                 int k = (int)((double)knum*(double)n/(double)kden+0.5);
+                if(k>KLIMIT) continue;
 
                 // Generate vectors at random
                 elem **xs = malloc(sizeof(elem*)*n);
