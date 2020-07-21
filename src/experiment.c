@@ -14,8 +14,8 @@ int main(int argc, char const *argv[]){
 
     const int D[]    = {16,8,2};
     const int N[]    = {1000000,316227,100000,31622,10000,3162,1000,316,100};
-    const float KNUM[] = {1,1,1};
-    const float KDEN[] = {2,8,32};
+    const float KNUM[] = {2,1,1};
+    const float KDEN[] = {3,8,32};
     const lint MEMDISTLIMIT = 100000000; // less than 3GB
 
     for(int i1=0;i1<ARRSIZE(D);i1++){
