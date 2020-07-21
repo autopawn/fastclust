@@ -1,3 +1,3 @@
 compile:
 	mkdir -p bin
-	gcc -g -Wall src/*.c -lm -o bin/experiment
+	gcc -g -O4 -Wall src/*.c -lm -o bin/experiment

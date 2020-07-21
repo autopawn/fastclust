@@ -4,15 +4,14 @@
 #include "common.h"
 
 // Clustering using optimization 3, retrieves array of assignments
-int *clust_opt2(elem **elems, int n, int k, int start, lint *dists_computed){
+lint clust_opt2(elem **elems, int n, int k, int start, int *clus, double *prox){
     assert(k>0 && k<=n);
+    assert(clus!=NULL);
+    assert(prox!=NULL);
+
     // total number of distances
     lint d_computed = 0;
 
-    // elem id. -> cluster id.
-    int *clus = malloc(sizeof(int)*n);
-    // elem id. -> distance to centroid
-    double *prox = malloc(sizeof(double)*n);
     // centroids
     int *cents = malloc(sizeof(int)*k);
 
@@ -72,12 +71,13 @@ int *clust_opt2(elem **elems, int n, int k, int start, lint *dists_computed){
         free(cprox);
     }
 
+    // Fix the distances to centroid for the centroids
+    for(int h=0;h<k;h++) prox[cents[h]] = 0;
+
     // -- free memory
     free(cents);
-    free(prox);
-    // Set the distances computed
-    if(dists_computed!=NULL) *dists_computed = d_computed;
-    // Return assigns
-    return clus;
+
+    // Return distances computed
+    return d_computed;
 }
 

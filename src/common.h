@@ -40,12 +40,23 @@ static inline int dindx_cmp(const void *a, const void *b){
 // Define dindxvec as a vector of dindx
 CADTS_VECTOR(dindxvec,dindx)
 
+/* All clustering options receive:
+elems : an array of points to elements.
+n     : number of elements
+k     : number of clusters
+start : initial centroid index
+clus  : size n array to store final cluster of each element
+prox  : size n array to store the distance of each element to the centroid
+(some) mem_lim : limit for stored distances, if reached; the operation is aborted and -1 is returned.
+--
+Returns: the number of distances that had to be computed, or a negative value if the computation could not finish.
+*/
 
-int *clust_opt1(elem **elems, int n, int k, int start, lint *dists_computed);
-int *clust_opt2(elem **elems, int n, int k, int start, lint *dists_computed);
-int *clust_opt3(elem **elems, int n, int k, int start, lint *dists_computed);
-int *clust_opt4a(elem **elems, int n, int k, int start, lint *dists_computed);
-int *clust_opt4b(elem **elems, int n, int k, int start, lint *dists_computed);
-int *clust_opt4ab(elem **elems, int n, int k, int start, lint *dists_computed);
+lint clust_opt1(elem **elems, int n, int k, int start, int *clus, double *prox);
+lint clust_opt2(elem **elems, int n, int k, int start, int *clus, double *prox);
+lint clust_opt3(elem **elems, int n, int k, int start, int *clus, double *prox);
+lint clust_opt4a(elem **elems, int n, int k, int start, int *clus, double *prox);
+lint clust_opt4b(elem **elems, int n, int k, int start, int *clus, double *prox, lint mem_lim);
+lint clust_opt4ab(elem **elems, int n, int k, int start, int *clus, double *prox, lint mem_lim);
 
 #endif

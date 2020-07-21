@@ -4,15 +4,14 @@
 #include "common.h"
 
 // Clustering using optimization 3, retrieves array of assignments
-int *clust_opt4a(elem **elems, int n, int k, int start, lint *dists_computed){
+lint clust_opt4a(elem **elems, int n, int k, int start, int *clus, double *prox){
     assert(k>0 && k<=n);
+    assert(clus!=NULL);
+    assert(prox!=NULL);
+
     // total number of distances
     lint d_computed = 0;
 
-    // elem id. -> cluster id.
-    int *clus = malloc(sizeof(int)*n);
-    // elem id. -> distance to centroid
-    double *prox = malloc(sizeof(double)*n);
     // elements on each cluster
     dindxvec **clusters = malloc(sizeof(dindxvec *)*k);
     for(int i=0;i<k;i++) clusters[i] = dindxvec_init(2);
@@ -133,19 +132,17 @@ int *clust_opt4a(elem **elems, int n, int k, int start, lint *dists_computed){
         free(cprox);
     }
 
+    // Fix the distances to centroid for the centroids
+    for(int h=0;h<k;h++) prox[cents[h]] = 0;
+
     // -- free memory
     for(int i=0;i<n;i++) dindxvec_free(clusmov_dmem[i]);
     free(clusmov_dmem);
-
     free(cents);
-
     for(int i=0;i<k;i++) dindxvec_free(clusters[i]);
     free(clusters);
 
-    free(prox);
-    // Set the distances computed
-    if(dists_computed!=NULL) *dists_computed = d_computed;
     // Return assigns
-    return clus;
+    return d_computed;
 }
 

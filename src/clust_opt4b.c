@@ -4,15 +4,16 @@
 #include "common.h"
 
 // Clustering using optimization 3, retrieves array of assignments
-int *clust_opt4b(elem **elems, int n, int k, int start, lint *dists_computed){
+lint clust_opt4b(elem **elems, int n, int k, int start, int *clus, double *prox, lint mem_lim){
     assert(k>0 && k<=n);
+    assert(clus!=NULL);
+    assert(prox!=NULL);
+
     // total number of distances
     lint d_computed = 0;
+    // total number of stored distances
+    lint d_stored = 0;
 
-    // elem id. -> cluster id.
-    int *clus = malloc(sizeof(int)*n);
-    // elem id. -> distance to centroid
-    double *prox = malloc(sizeof(double)*n);
     // elements on each cluster
     dindxvec **clusters = malloc(sizeof(dindxvec *)*k);
     for(int i=0;i<k;i++) clusters[i] = dindxvec_init(2);
@@ -37,6 +38,8 @@ int *clust_opt4b(elem **elems, int n, int k, int start, lint *dists_computed){
     // Sort cluster elements from nearest to furthest
     qsort(clusters[0]->items,clusters[0]->len,sizeof(dindx),dindx_cmp);
 
+
+    int abort = 0;
     // Iterate to find new centroids
     for(int h=1;h<k;h++){
         // Pick new centroid
@@ -118,7 +121,8 @@ int *clust_opt4b(elem **elems, int n, int k, int start, lint *dists_computed){
                     prox2 = distance(elems[pick],elems[i]); d_computed++;
 
                     // Save the distance that was computed for future use
-                    dindxvec_endadd(clusall_dmem[i],(dindx){.dist=prox2,.index=h});
+                    dindxvec_endadd(clusall_dmem[i],(dindx){.dist=prox2,.index=h});  d_stored++;
+                    if(d_stored>mem_lim) abort = 1;
 
                     // Check if element is moved to the new centroid
                     if(prox2 >= prox[i]) passes = 0;
@@ -132,8 +136,12 @@ int *clust_opt4b(elem **elems, int n, int k, int start, lint *dists_computed){
                 }else{
                     dindxvec_endadd(clusters[j],di);
                 }
+
+                if(abort) break;
             }
             dindxvec_free(a);
+
+            if(abort) break;
         }
 
         // Sort cluster elements from nearest to furthest
@@ -141,21 +149,29 @@ int *clust_opt4b(elem **elems, int n, int k, int start, lint *dists_computed){
 
         // Free cprox
         free(cprox);
+
+        // Free clusal_dmem[pick]
+        dindxvec_free(clusall_dmem[pick]);
+        clusall_dmem[pick] = NULL;
+
+        if(abort) break;
+    }
+
+    if(!abort){
+        // Fix the distances to centroid for the centroids
+        for(int h=0;h<k;h++) prox[cents[h]] = 0;
     }
 
     // -- free memory
-    for(int i=0;i<n;i++) dindxvec_free(clusall_dmem[i]);
+    for(int i=0;i<n;i++){
+        if(clusall_dmem[i]!=NULL) dindxvec_free(clusall_dmem[i]);
+    }
     free(clusall_dmem);
-
     free(cents);
-
     for(int i=0;i<k;i++) dindxvec_free(clusters[i]);
     free(clusters);
 
-    free(prox);
-    // Set the distances computed
-    if(dists_computed!=NULL) *dists_computed = d_computed;
-    // Return assigns
-    return clus;
+    // Return distances computed
+    return abort? -1 : d_computed;
 }
 
