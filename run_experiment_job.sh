@@ -6,5 +6,5 @@
 #SBATCH --array=1-100   ## Separate into different tasks
 
 fname=$(printf "%04d" $SLURM_ARRAY_TASK_ID)
-./bin/experiment $SLURM_ARRAY_TASK_ID > results/"$fname"
+stdbuf -oL -eL ./bin/experiment $SLURM_ARRAY_TASK_ID > results/"$fname"
 

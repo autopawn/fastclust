@@ -26,7 +26,6 @@ int main(int argc, char const *argv[]){
                 int knum = KNUM[i3];
                 int kden = KDEN[i3];
                 int k = (int)((double)knum*(double)n/(double)kden+0.5);
-                if(n*log10(n)*log10(k)*d>=536870912.0) continue;
 
                 // Generate vectors at random
                 elem **xs = malloc(sizeof(elem*)*n);

@@ -42,9 +42,6 @@ lint clust_opt4b(elem **elems, int n, int k, int start, int *clus, double *prox,
     int abort = 0;
     // Iterate to find new centroids
     for(int h=1;h<k;h++){
-        #ifdef DEBUGINFO
-            if(h%100==0) printf("# 4b %d %d/%d (%lld dist)\n",n,h,k,d_stored);
-        #endif
 
         // Pick new centroid
         int pick = -1;
