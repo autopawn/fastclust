@@ -17,9 +17,21 @@ def parse_line(lin):
     dim   = int(lin[1])
     n     = int(lin[2])
     kp    = lin[3]
-    dists = int(lin[4])
+    dists = float(lin[4])
     time  = float(lin[5])#+1e-8
+    if '/' not in kp:
+        kp = round(np.log2(int(kp)/n))
     return optk,dim,n,kp,dists,time
+
+def style(opname):
+    lin = "-"
+    if "lo" in opname: lin+= "-"
+    if "m2" in opname: lin+= "."
+    lw = 2
+    if ("_" not in opname) and ("1" in opname): lw = 5
+    if ("_" not in opname) and ("2" in opname): lw = 4
+    if ("_" in opname): lw = 2
+    return (lin,lw)
 
 
 # Read value alternatives
@@ -54,30 +66,34 @@ for i,fname in enumerate(fnames):
                 ndists[optks.index(o),dims.index(d),ns.index(n),kps.index(kp),i] = di
                 times[optks.index(o),dims.index(d),ns.index(n),kps.index(kp),i] = t
 
+
 # Average data along files
 ndists = np.mean(ndists,axis=-1)
 times = np.mean(times,axis=-1)
 
 # Plot data
-for i,dims in enumerate(dims):
-    for j,kp in enumerate(kps):
-        fig,(ax1,ax2) = plt.subplots(1,2,sharex=True,squeeze=True)
+for j,kp in enumerate(kps):
+    fig,axs = plt.subplots(len(dims),2,sharex=True,sharey='col',squeeze=True)
+    for i,ds in enumerate(dims):
         for k,optk in enumerate(optks):
             xs = ns
             ys = ndists[k,i,:,j]
-            ax1.loglog(xs,ys,"o-",label=optk)
-        ax1.grid()
-        ax1.set_xlabel('$n$')
-        ax1.set_ylabel('avg. distances computed')
+            lin,lw = style(optk)
+            axs[i][0].loglog(xs,ys,lin,lw=lw,label=optk)
+        axs[i][0].grid()
+        axs[i][0].set_xlabel('$n$')
+        axs[i][0].set_ylabel('n. dist. (%d dims)'%ds)
+
 
         for k,optk in enumerate(optks):
             xs = ns
             ys = times[k,i,:,j]
-            ax2.loglog(xs,ys,"o-",label=optk)
-        ax2.grid()
-        ax2.set_xlabel('$n$')
-        ax2.set_ylabel('avg. time (s)')
+            lin,lw = style(optk)
+            axs[i][1].loglog(xs,ys,lin,lw=lw,label=optk)
+        axs[i][1].grid()
+        axs[i][1].set_xlabel('$n$')
+        axs[i][1].set_ylabel('time [s] (%d dims)'%ds)
 
-        plt.suptitle("Clustering of points on %d dimensions, $k/n = %s$"%(dims,kp))
-        plt.legend()
-        plt.show()
+    plt.suptitle("Clustering of points with $k/n = %s$"%(kp,))
+    plt.legend()
+    plt.show()

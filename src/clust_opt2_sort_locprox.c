@@ -3,8 +3,7 @@
 
 #include "common.h"
 
-// Clustering using optimization 3, retrieves array of assignments
-lint clust_opt3(elem **elems, int n, int k, int start, int *clus, double *prox){
+lint clust_opt2_sort_locprox(elem **elems, int n, int k, int start, int *clus, double *prox){
     assert(k>0 && k<=n);
     assert(clus!=NULL);
     assert(prox!=NULL);
@@ -17,6 +16,9 @@ lint clust_opt3(elem **elems, int n, int k, int start, int *clus, double *prox){
     for(int i=0;i<k;i++) clusters[i] = dindxvec_init(2);
     // centroids
     int *cents = malloc(sizeof(int)*k);
+    // elem id. -> dindx // stored computed distances to the cluster (were the element has been) centroids
+    dindxvec **clusmov_dmem = malloc(sizeof(dindxvec *)*n);
+    for(int i=0;i<n;i++) clusmov_dmem[i] = dindxvec_init(1);
 
     // initialize
     cents[0] = start;
@@ -26,10 +28,8 @@ lint clust_opt3(elem **elems, int n, int k, int start, int *clus, double *prox){
         if(i!=start){
             prox[i]  = distance(elems[start],elems[i]); d_computed++;
             clus[i] = 0;
-            dindx di;
-            di.dist  = prox[i];
-            di.index = i;
-            dindxvec_endadd(clusters[0],di);
+            dindxvec_endadd(clusters[0]    ,(dindx){.dist=prox[i],.index=i});
+            dindxvec_endadd(clusmov_dmem[i],(dindx){.dist=prox[i],.index=0});
         }
     }
     // Sort cluster elements from nearest to furthest
@@ -57,10 +57,42 @@ lint clust_opt3(elem **elems, int n, int k, int start, int *clus, double *prox){
         dindxvec_endpop(clusters[clus[pick]]);
         clus[pick] = h;
 
-        // Compute distance to old centroids
+        // Right lower bound
+        double cprox_lower_bound_right = prox[pick];
+
+        // Closest centroid known on the left
+        dindx di = dindxvec_endpop(clusmov_dmem[pick]);
+        double closest_centroid_left_dist = di.dist;
+        int closest_centroid_left_j       = di.index;
+
+        // -- Compute distance to old centroids, when needed
         double *cprox = malloc(sizeof(double)*h);
-        for(int j=0;j<h;j++){
+        for(int j=0;j<h;j++) cprox[j] = 1/0.0; // we will mark centroids too far with inf (here, now)
+
+        // Iterate from right to left
+        for(int j=h-1;j>=0;j--){
+            // Get another left lower bound, if needed
+            if(j==closest_centroid_left_j && clusmov_dmem[pick]->len>0){
+                cprox[j] = closest_centroid_left_dist;
+                dindx di = dindxvec_endpop(clusmov_dmem[pick]);
+                closest_centroid_left_dist = di.dist;
+                closest_centroid_left_j    = di.index;
+                continue;
+            }
+
+            // Skip cluster's centroid by right lower bound
+            double radious_j = (clusters[j]->len==0)? 0 : dindxvec_endtop(clusters[j]).dist;
+            if(radious_j < cprox_lower_bound_right/2) continue;
+
+            // Skip cluster's centroid by left lower bound
+            if(j > closest_centroid_left_j && radious_j < (prox[cents[j]] - closest_centroid_left_dist)/2) continue;
+
+            // This will probably be an affected cluster, compute the distance
             cprox[j] = distance(elems[pick],elems[cents[j]]);  d_computed++;
+
+            // Update right lower bound
+            double candidate = prox[cents[j]] - cprox[j];
+            if(cprox_lower_bound_right<candidate) cprox_lower_bound_right = candidate;
         }
 
         // Steal pairs
@@ -82,6 +114,7 @@ lint clust_opt3(elem **elems, int n, int k, int start, int *clus, double *prox){
                 if(prox2 < prox[i]){
                     di.dist = prox2;
                     dindxvec_endadd(clusters[h],di);
+                    dindxvec_endadd(clusmov_dmem[i],(dindx){.dist=prox2,.index=h});
                     prox[i] = prox2;
                     clus[i] = h;
                 }else{
@@ -102,11 +135,13 @@ lint clust_opt3(elem **elems, int n, int k, int start, int *clus, double *prox){
     for(int h=0;h<k;h++) prox[cents[h]] = 0;
 
     // -- free memory
+    for(int i=0;i<n;i++) dindxvec_free(clusmov_dmem[i]);
+    free(clusmov_dmem);
     free(cents);
     for(int i=0;i<k;i++) dindxvec_free(clusters[i]);
     free(clusters);
 
-    // Return distances computed
+    // Return assigns
     return d_computed;
 }
 

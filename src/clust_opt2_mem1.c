@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-lint clust_opt2(elem **elems, int n, int k, int start, int *clus, double *prox){
+lint clust_opt2_mem1(elem **elems, int n, int k, int start, int *clus, double *prox){
     assert(k>0 && k<=n);
     assert(clus!=NULL);
     assert(prox!=NULL);
@@ -14,6 +14,10 @@ lint clust_opt2(elem **elems, int n, int k, int start, int *clus, double *prox){
     // centroids
     int *cents = malloc(sizeof(int)*k);
 
+    // elem id. -> dindx // stored computed distances to the cluster (were the element has been) centroids
+    dindxvec **clusmov_dmem = malloc(sizeof(dindxvec *)*n);
+    for(int i=0;i<n;i++) clusmov_dmem[i] = dindxvec_init(1);
+
     // initialize
     cents[0] = start;
     clus[start] = 0;
@@ -22,6 +26,7 @@ lint clust_opt2(elem **elems, int n, int k, int start, int *clus, double *prox){
         if(i!=start){
             prox[i]  = distance(elems[start],elems[i]); d_computed++;
             clus[i] = 0;
+            dindxvec_endadd(clusmov_dmem[i],(dindx){.dist=prox[i],.index=0});
         }
     }
 
@@ -54,15 +59,38 @@ lint clust_opt2(elem **elems, int n, int k, int start, int *clus, double *prox){
             cprox[j] = distance(elems[pick],elems[cents[j]]);  d_computed++;
         }
 
-        // Update proxs
+        // Steal pairs
         for(int i=0;i<n;i++){
-            if(cents[clus[i]] != i){ // if this is not a centroid
-                if(prox[i] > cprox[clus[i]]/2){ // if centroid is too far away from current centroid
-                    double prox2 = distance(elems[pick],elems[i]); d_computed++;
-                    if(prox2 < prox[i]){
-                        prox[i] = prox2;
-                        clus[i] = h;
-                    }
+            // Skip if centroid
+            if(cents[clus[i]]==i) continue;
+
+            int passes = 1;
+
+            // Go over all known distances, check if any gives a big upper bound
+            int len = clusmov_dmem[i]->len;
+            for(int o=len-1;o>=0;o--){
+                dindx dp = clusmov_dmem[i]->items[o];
+
+                double bound = cprox[dp.index] - dp.dist;
+                if(bound<0) bound = -bound;
+
+                if(bound >= prox[i]){
+                    // Found a larger lower bound, pick is too far away
+                    passes = 0;
+                    break;
+                }
+            }
+
+            if(passes){ // pick still has a chance of stealing this element
+
+                // Compute distance to new centroid
+                double prox2 = distance(elems[pick],elems[i]); d_computed++;
+
+                if(prox2 < prox[i]){ // Move the element to the new centroid
+                    prox[i] = prox2;
+                    clus[i] = h;
+                    // Save the distance that was computed for future use
+                    dindxvec_endadd(clusmov_dmem[i],(dindx){.dist=prox2,.index=h});
                 }
             }
         }
@@ -74,6 +102,8 @@ lint clust_opt2(elem **elems, int n, int k, int start, int *clus, double *prox){
     for(int h=0;h<k;h++) prox[cents[h]] = 0;
 
     // -- free memory
+    for(int i=0;i<n;i++) dindxvec_free(clusmov_dmem[i]);
+    free(clusmov_dmem);
     free(cents);
 
     // Return distances computed

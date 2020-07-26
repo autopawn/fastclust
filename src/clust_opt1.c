@@ -3,7 +3,6 @@
 
 #include "common.h"
 
-// Clustering using optimization 3, retrieves array of assignments
 lint clust_opt1(elem **elems, int n, int k, int start, int *clus, double *prox){
     assert(k>0 && k<=n);
     assert(clus!=NULL);

@@ -3,8 +3,7 @@
 
 #include "common.h"
 
-// Clustering using optimization 3, retrieves array of assignments
-lint clust_opt4ab(elem **elems, int n, int k, int start, int *clus, double *prox, lint mem_lim){
+lint clust_opt2_sort_locprox_mem2(elem **elems, int n, int k, int start, int *clus, double *prox, lint mem_lim){
     assert(k>0 && k<=n);
     assert(clus!=NULL);
     assert(prox!=NULL);
@@ -134,7 +133,7 @@ lint clust_opt4ab(elem **elems, int n, int k, int start, int *clus, double *prox
 
                 int passes = 1;
 
-                // New centroid too far away from current centroid
+                // New centroid too far away from current centroid // NOTE: found it is not needed.
                 if(prox[i] <= cprox_lo[j]/2){
                     passes = 0;
                 }

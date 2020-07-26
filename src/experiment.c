@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 #include "common.h"
 
@@ -12,11 +13,18 @@ int main(int argc, char const *argv[]){
 
     srand(atoi(argv[1]));
 
-    const int D[]    = {16,8,2};
-    const int N[]    = {1000000,316227,100000,31622,10000,3162,1000,316,100};
+    const int D[]    = {2,8,16};
+
+    // const int N[]    = {100,316,1000,3162,10000,31622,100000,316227,1000000};
+    const int N[]    = {100,316,1000};
+
     const float KNUM[] = {2,1,1};
     const float KDEN[] = {3,8,32};
+
+    const char *STRATEGIES[] = {"op1","op2","op2_m1","op2_lo_m1","op2_s","op2_s_lo","op2_s_m2","op2_s_lo_m2"};
+
     const lint MEMDISTLIMIT = 100000000; // less than 3GB
+
     const int KLIMIT = 316227;
 
     for(int i1=0;i1<ARRSIZE(D);i1++){
@@ -38,80 +46,80 @@ int main(int argc, char const *argv[]){
                     for(int j=0;j<d;j++) xs[i]->v[j] = rand()/(float)RAND_MAX;
                 }
 
-                // Start counting time (cpu and elapsed)
+                // Time counters
                 clock_t start;
                 double time;
 
-                int *clus4b    = malloc(sizeof(int)*n);
-                double *prox4b = malloc(sizeof(double)*n);
-                start = clock();
-                lint ndists4b = clust_opt4b(xs,n,k,0,clus4b,prox4b,MEMDISTLIMIT);
-                time = (double)(clock() - start) / (double)CLOCKS_PER_SEC;
-                printf("op4b\t%d\t%d\t%d/%d\t%lld\t%.9lf\n",d,n,knum,kden,ndists4b,time);
+                // Previous results
+                int *clus1    = NULL;
+                double *prox1 = NULL;
 
-                int *clus4ab    = malloc(sizeof(int)*n);
-                double *prox4ab = malloc(sizeof(double)*n);
-                start = clock();
-                lint ndists4ab = clust_opt4ab(xs,n,k,0,clus4ab,prox4ab,MEMDISTLIMIT);
-                time = (double)(clock() - start) / (double)CLOCKS_PER_SEC;
-                printf("op4ab\t%d\t%d\t%d/%d\t%lld\t%.9lf\n",d,n,knum,kden,ndists4ab,time);
+                for(int i4=0;i4<ARRSIZE(STRATEGIES);i4++){
+                    const char* strat = STRATEGIES[i4];
 
-                int *clus1    = malloc(sizeof(int)*n);
-                double *prox1 = malloc(sizeof(double)*n);
-                start = clock();
-                lint ndists1 = clust_opt1(xs,n,k,0,clus1,prox1);
-                time = (double)(clock() - start) / (double)CLOCKS_PER_SEC;
-                printf("op1\t%d\t%d\t%d/%d\t%lld\t%.9lf\n",d,n,knum,kden,ndists1,time);
+                    int *clus    = malloc(sizeof(int)*n);
+                    double *prox = malloc(sizeof(double)*n);
 
-                int *clus2    = malloc(sizeof(int)*n);
-                double *prox2 = malloc(sizeof(double)*n);
-                start = clock();
-                lint ndists2 = clust_opt2(xs,n,k,0,clus2,prox2);
-                time = (double)(clock() - start) / (double)CLOCKS_PER_SEC;
-                printf("op2\t%d\t%d\t%d/%d\t%lld\t%.9lf\n",d,n,knum,kden,ndists2,time);
+                    start = clock();
 
-                int *clus3    = malloc(sizeof(int)*n);
-                double *prox3 = malloc(sizeof(double)*n);
-                start = clock();
-                lint ndists3 = clust_opt3(xs,n,k,0,clus3,prox3);
-                time = (double)(clock() - start) / (double)CLOCKS_PER_SEC;
-                printf("op3\t%d\t%d\t%d/%d\t%lld\t%.9lf\n",d,n,knum,kden,ndists3,time);
+                    lint ndists;
+                    if(strcmp("op1",strat)==0){
+                        ndists = clust_opt1(xs,n,k,0,clus,prox);
 
-                int *clus4a    = malloc(sizeof(int)*n);
-                double *prox4a = malloc(sizeof(double)*n);
-                start = clock();
-                lint ndists4a = clust_opt4a(xs,n,k,0,clus4a,prox4a);
-                time = (double)(clock() - start) / (double)CLOCKS_PER_SEC;
-                printf("op4a\t%d\t%d\t%d/%d\t%lld\t%.9lf\n",d,n,knum,kden,ndists4a,time);
+                    }else if(strcmp("op2",strat)==0){
+                        ndists = clust_opt2(xs,n,k,0,clus,prox);
 
+                    }else if(strcmp("op2_m1",strat)==0){
+                        ndists = clust_opt2_mem1(xs,n,k,0,clus,prox);
 
-                for(int i=0;i<n;i++){
-                    assert(clus2[i]==clus1[i]);
-                    assert(clus3[i]==clus1[i]);
-                    assert(clus4a[i]==clus1[i]);
-                    assert(clus4b[i]==clus1[i] || ndists4b==-1);
-                    assert(clus4ab[i]==clus1[i] || ndists4ab==-1);
+                    }else if(strcmp("op2_lo_m1",strat)==0){
+                        ndists = clust_opt2_locprox_mem1(xs,n,k,0,clus,prox);
+
+                    }else if(strcmp("op2_s",strat)==0){
+                        ndists = clust_opt2_sort(xs,n,k,0,clus,prox);
+
+                    }else if(strcmp("op2_s_lo",strat)==0){
+                        ndists = clust_opt2_sort_locprox(xs,n,k,0,clus,prox);
+
+                    }else if(strcmp("op2_s_m2",strat)==0){
+                        ndists = clust_opt2_sort_mem2(xs,n,k,0,clus,prox,MEMDISTLIMIT);
+
+                    }else if(strcmp("op2_s_lo_m2",strat)==0){
+                        ndists = clust_opt2_sort_locprox_mem2(xs,n,k,0,clus,prox,MEMDISTLIMIT);
+
+                    }else{
+                        assert(!"Valid strategy name in STRATEGIES.");
+
+                    }
+
+                    time = (double)(clock() - start) / (double)CLOCKS_PER_SEC;
+
+                    printf("%s\t%d\t%d\t%d/%d\t%lld\t%.9lf\n",strat,d,n,knum,kden,ndists,time);
+
+                    if(prox1!=NULL){
+                        // Ensure same results than previous optimization.
+                        for(int i=0;i<n;i++) assert(clus[i]==clus1[i]);
+                        free(prox1);
+                        free(clus1);
+                    }
+
+                    // Swap results
+                    prox1 = prox;
+                    clus1 = clus;
                 }
 
-                free(prox4a);
-                free(clus4a);
-                free(prox3);
-                free(clus3);
-                free(prox2);
-                free(clus2);
-                free(prox1);
-                free(clus1);
-                free(prox4ab);
-                free(clus4ab);
-                free(prox4b);
-                free(clus4b);
+                // Free previous result memory
+                if(prox1!=NULL) free(prox1);
+                if(clus1!=NULL) free(clus1);
 
-                // Free memory
+                // Free elements memory
                 for(int i=0;i<n;i++){
                     free(xs[i]->v);
                     free(xs[i]);
                 }
                 free(xs);
+
+                printf("\n");
             }
 
         }

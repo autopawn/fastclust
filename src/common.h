@@ -34,13 +34,15 @@ static inline int dindx_cmp(const void *a, const void *b){
     dindx *bb = (dindx *) b;
     if(aa->dist < bb->dist) return -1;
     if(aa->dist > bb->dist) return +1;
-    return aa->index - bb->index;
+    // Decreasing index order so that results are the same in
+    // case of distance ties for the different optimizations.
+    return bb->index - aa->index;
 }
 
 // Define dindxvec as a vector of dindx
 CADTS_VECTOR(dindxvec,dindx)
 
-/* All clustering options receive:
+/* All clustering alternatives share the following parameters:
 elems : an array of points to elements.
 n     : number of elements
 k     : number of clusters
@@ -54,9 +56,13 @@ Returns: the number of distances that had to be computed, or a negative value if
 
 lint clust_opt1(elem **elems, int n, int k, int start, int *clus, double *prox);
 lint clust_opt2(elem **elems, int n, int k, int start, int *clus, double *prox);
-lint clust_opt3(elem **elems, int n, int k, int start, int *clus, double *prox);
-lint clust_opt4a(elem **elems, int n, int k, int start, int *clus, double *prox);
-lint clust_opt4b(elem **elems, int n, int k, int start, int *clus, double *prox, lint mem_lim);
-lint clust_opt4ab(elem **elems, int n, int k, int start, int *clus, double *prox, lint mem_lim);
+lint clust_opt2_mem1(elem **elems, int n, int k, int start, int *clus, double *prox);
+lint clust_opt2_locprox_mem1(elem **elems, int n, int k, int start, int *clus, double *prox);
+
+lint clust_opt2_sort(elem **elems, int n, int k, int start, int *clus, double *prox);
+lint clust_opt2_sort_locprox(elem **elems, int n, int k, int start, int *clus, double *prox);
+
+lint clust_opt2_sort_mem2(elem **elems, int n, int k, int start, int *clus, double *prox, lint mem_lim);
+lint clust_opt2_sort_locprox_mem2(elem **elems, int n, int k, int start, int *clus, double *prox, lint mem_lim);
 
 #endif
