@@ -7,23 +7,32 @@
 
 #define ARRSIZE(X) (sizeof(X)/sizeof((X)[0]))
 
+// Predicted number of distances that need to be computed with opt0
+// https://www.wolframalpha.com/input/?i=%5Csum_%7Bh%3D1%7D%5E%7Bk-1%7D+%28n-h%29+h
+// sum_(h=1)^(k - 1) h (n - h) = -1/6 (k - 1) k (2 k - 3 n - 1)
+lint predicted_opt0_dists(lint n, lint k){
+    return - (k - 1) * k * (2 * k - 3 * n - 1) / 6;
+}
 
 int main(int argc, char const *argv[]){
     assert(argc==2);
 
     srand(atoi(argv[1]));
 
+    // const char *STRATEGIES[] = {"op0","op1","op2","op2_m1","op2_lo_m1","op2_s","op2_s_lo","op2_s_m2","op2_s_lo_m2"};
+    const char *STRATEGIES[] = {"op0"};
+
     const int D[]    = {2,8,16};
 
-    // const int N[]    = {100,316,1000,3162,10000,31622,100000,316227,1000000};
-    const int N[]    = {100,316,1000};
+    const int N[]    = {100,316,1000,3162,10000,31622,100000,316227,1000000};
+    // const int N[]    = {100,316,1000};
 
     const float KNUM[] = {2,1,1};
     const float KDEN[] = {3,8,32};
 
-    const char *STRATEGIES[] = {"op1","op2","op2_m1","op2_lo_m1","op2_s","op2_s_lo","op2_s_m2","op2_s_lo_m2"};
 
-    const lint MEMDISTLIMIT = 100000000; // less than 3GB
+    const lint MEMDISTLIMIT  = 100000000; // less than 3GB
+    const lint OPT0DISTLIMIT = 1000000000;
 
     const int KLIMIT = 316227;
 
@@ -63,7 +72,20 @@ int main(int argc, char const *argv[]){
                     start = clock();
 
                     lint ndists;
-                    if(strcmp("op1",strat)==0){
+                    if(strcmp("op0",strat)==0){
+                        // Run optimization 0, if predicted number of distances isn't larger than OPT0DISTLIMIT
+                        lint predicted_ndists = predicted_opt0_dists(n,k);
+
+                        if(predicted_ndists<=OPT0DISTLIMIT){
+                            int *cents = malloc(sizeof(int)*k);
+                            ndists = clust_opt0(xs,n,k,0,cents);
+                            assert(ndists==predicted_ndists);
+                            free(cents);
+                        }else{
+                            ndists = -1;
+                        }
+
+                    }else if(strcmp("op1",strat)==0){
                         ndists = clust_opt1(xs,n,k,0,clus,prox);
 
                     }else if(strcmp("op2",strat)==0){

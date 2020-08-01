@@ -42,8 +42,18 @@ static inline int dindx_cmp(const void *a, const void *b){
 // Define dindxvec as a vector of dindx
 CADTS_VECTOR(dindxvec,dindx)
 
-/* All clustering alternatives share the following parameters:
-elems : an array of points to elements.
+
+/* Simple diversity-based clustering initialization method:
+elems : an array of pointers to elements.
+n     : number of elements
+k     : number of clusters
+start : initial centroid index
+cents : size k array to store centroids
+*/
+lint clust_opt0(elem **elems, int n, int k, int start, int *cents);
+
+/* All of the following clustering alternatives share the following parameters:
+elems : an array of pointers to elements.
 n     : number of elements
 k     : number of clusters
 start : initial centroid index
