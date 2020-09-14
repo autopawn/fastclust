@@ -81,11 +81,18 @@ lint clust_opt2_locprox_mem1(elem **elems, int n, int k, int start, int *clus, d
                 if(j==closest_centroid_left_j && clusmov_dmem[pick]->len>0){
                     cprox_lo[j] = closest_centroid_left_dist;
                     cprox_hi[j] = closest_centroid_left_dist;
+
+                    // Update right lower bound
+                    double candidate = prox[cents[j]] - cprox_lo[j];
+                    if(cprox_lower_bound_right<candidate) cprox_lower_bound_right = candidate;
+
                     dindx di = dindxvec_endpop(clusmov_dmem[pick]);
                     closest_centroid_left_dist = di.dist;
                     closest_centroid_left_j    = di.index;
+
                     continue;
                 }
+
                 // Update lower bound with right lower bound
                 if(cprox_lo[j] < cprox_lower_bound_right) cprox_lo[j] = cprox_lower_bound_right;
                 // Update lower bound with left lower bound

@@ -20,19 +20,20 @@ int main(int argc, char const *argv[]){
     srand(atoi(argv[1]));
 
     // const char *STRATEGIES[] = {"op0","op1","op2","op2_m1","op2_lo_m1","op2_s","op2_s_lo","op2_s_m2","op2_s_lo_m2"};
-    const char *STRATEGIES[] = {"op0"};
+    // const char *STRATEGIES[] = {"op0"};
+    const char *STRATEGIES[] = {"op0","op1","op2","op2_m1","op2_lo_m1"};
 
     const int D[]    = {2,8,16};
 
-    const int N[]    = {100,316,1000,3162,10000,31622,100000,316227,1000000};
-    // const int N[]    = {100,316,1000};
+    // const int N[]    = {100,316,1000,3162,10000,31622,100000,316227,1000000};
+    const int N[]    = {100,316,1000,3162};
 
     const float KNUM[] = {2,1,1};
     const float KDEN[] = {3,8,32};
 
 
     const lint MEMDISTLIMIT  = 100000000; // less than 3GB
-    const lint OPT0DISTLIMIT = 1000000000;
+    const lint OPT0DISTLIMIT = 100000000000;
 
     const int KLIMIT = 316227;
 
@@ -119,8 +120,8 @@ int main(int argc, char const *argv[]){
                     printf("%s\t%d\t%d\t%d/%d\t%lld\t%.9lf\n",strat,d,n,knum,kden,ndists,time);
 
                     if(prox1!=NULL){
-                        // Ensure same results than previous optimization.
-                        for(int i=0;i<n;i++) assert(clus[i]==clus1[i]);
+                        // // Ensure same results than previous optimization.
+                        // for(int i=0;i<n;i++) assert(clus[i]==clus1[i]);
                         free(prox1);
                         free(clus1);
                     }
