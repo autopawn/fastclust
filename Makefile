@@ -1,3 +1,5 @@
+FLAGS = -Wall -g -O4 -Wall
+
 compile:
 	mkdir -p bin
-	gcc -Wall -g -O4 -Wall src/*.c -lm -o bin/experiment
+	gcc $(FLAGS) sdbs/*.c -lm -o bin/experiment
