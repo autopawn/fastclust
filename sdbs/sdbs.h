@@ -6,26 +6,18 @@
 
 typedef long long int lint;
 
-// ===========================================
-// ==== DEFINITION OF THE ELEMENTS FROM X ====
-// ===========================================
-// Note: This code can be used for other types by changing the definition of `elem` and `distance`.
+// ==========================================
+// ==== DECLARATION OF THE ELEMENTS ON X ====
+// ==========================================
+// This code can be used for different element types.
+// The 'elem' struct and the 'distance' function must be defined in your compilation unit according
+// to the task at hand.
 
-// Elements are vectors
-typedef struct {
-    int dims;
-    double *v;
-} elem;
+// The type of the elemens of X
+typedef struct elem elem;
 
 // Distance between elements
-static inline double distance(const elem *a, const elem *b){
-    assert(a->dims == b->dims);
-    double total = 0;
-    for(int i=0;i<a->dims;i++){
-        total += (a->v[i]-b->v[i])*(a->v[i]-b->v[i]);
-    }
-    return sqrt(total);
-}
+double distance(const elem *a, const elem *b);
 
 // =======================
 // ==== RESULT STRUCT ====

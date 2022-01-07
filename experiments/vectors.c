@@ -5,10 +5,26 @@
 
 #include "sdbs.h"
 
+// Elements are vectors
+struct elem {
+    int dims;
+    double *v;
+};
+
+// The distance is the euclidean distance
+double distance(const elem *a, const elem *b){
+    assert(a->dims == b->dims);
+    double total = 0;
+    for(int i=0;i<a->dims;i++){
+        total += (a->v[i]-b->v[i])*(a->v[i]-b->v[i]);
+    }
+    return sqrt(total);
+}
+
+// Size of an array (if known at compile-time!)
 #define ARRSIZE(X) (sizeof(X)/sizeof((X)[0]))
 
 // Predicted number of distances that need to be computed with opt0
-// https://www.wolframalpha.com/input/?i=%5Csum_%7Bh%3D1%7D%5E%7Bk-1%7D+%28n-h%29+h
 // sum_(h=1)^(k - 1) h (n - h) = -1/6 (k - 1) k (2 k - 3 n - 1)
 lint predicted_opt0_dists(lint n, lint k){
     return - (k - 1) * k * (2 * k - 3 * n - 1) / 6;
